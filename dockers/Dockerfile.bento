@@ -8,12 +8,12 @@ RUN pip3 install poetry==1.4.2
 
 WORKDIR /usr/src
 
-COPY ./pyproject.toml /usr/src
-COPY . /usr/src
+COPY inference/pyproject.toml /usr/src
+COPY inference/ /usr/src
 RUN poetry install
 
 EXPOSE 3000
-RUN poetry run python /usr/src/dupish/onnx_to_bento.py
+RUN poetry run python /usr/src/inference/onnx_to_bento.py
 # CMD ["bentoml", "serve", "/usr/src/dupish/api:svc"]
 # CMD ["poetry", "run", "bentoml", "serve", "api:svc", "--working-dir", "dupish"]
 # bentoml serve api:svc --working-dir dupish

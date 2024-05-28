@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dupish"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["Olivier Risser-Maroix <orissermaroix@gmail.com>", "Mohamed Chelali <mouha.chelali@gmail.com>"]
@@ -7,8 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-inference = { path = "inference/", develop = true }
-backend = { path = "backend/", develop = true }
+fastapi = "^0.111.0"
+
 
 [build-system]
 requires = ["poetry-core"]

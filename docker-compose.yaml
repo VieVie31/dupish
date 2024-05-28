@@ -14,7 +14,7 @@ services:
     #   - dupish-bento:/data
     # environment:
     #   DUPISH_VOLUMES: /data
-    command: "poetry run bentoml serve api:svc --working-dir dupish"
+    command: "poetry run bentoml serve api:svc --working-dir inference"
     #"minio server --console-address :9001"
     # healthcheck:
     #   test: ["CMD", "mc", "ready", "local"]
