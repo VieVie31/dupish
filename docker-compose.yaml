@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  dupish:
+    container_name: dupish-bento
+    build:
+      context: .
+      dockerfile: dockers/Dockerfile.bento
+      args:
+        version: '0.0.1'
+    ports:
+      - "3000:3000"
+    # volumes:
+    #   - dupish-bento:/data
+    # environment:
+    #   DUPISH_VOLUMES: /data
+    command: "minio server --console-address :9001"
+    # healthcheck:
+    #   test: ["CMD", "mc", "ready", "local"]
+    #   interval: 30s
+    #   timeout: 20s
+    #   retries: 3
+
+volumes:
+  dupish-bento:
+    driver: local
+
+
