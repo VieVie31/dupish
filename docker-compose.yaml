@@ -14,6 +14,8 @@ services:
     #   - dupish-bento:/data
     # environment:
     #   DUPISH_VOLUMES: /data
+    networks:
+      - dupish-network
     command: "poetry run bentoml serve api:svc --working-dir inference"
     restart: unless-stopped
     healthcheck:
@@ -32,7 +34,18 @@ services:
     ports:
         - "81:81"
     command: "poetry run uvicorn backend.main:app --port 81 --host 0.0.0.0"
-    
+    depends_on:
+      - dupish
+    networks:
+      - dupish-network
+
+
+
+networks:
+  dupish-network:
+    driver: bridge
+
+
 
 volumes:
   dupish-bento:

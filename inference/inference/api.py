@@ -17,7 +17,9 @@ svc = bentoml.Service("isc_ft_v107_duplicate_embeddings", runners=[runner])
 
 
 @svc.api(input=Image(), output=NumpyNdarray())
-async def sr(img) -> np.ndarray:
+async def sr(img: PIL_Image) -> np.ndarray:
+    img = img.convert("RGB")
+
     # Resize the image
     img = img.resize((512, 512), PIL_Image.BILINEAR)
 

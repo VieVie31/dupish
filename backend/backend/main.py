@@ -20,7 +20,7 @@ def check_are_duplicate(im1: UploadFile = File(...), im2: UploadFile = File(...)
     im2_data = io.BytesIO(im2.file.read())
 
     # check if the images are duplicate
-    url = "http://192.168.1.17:3000/sr"
+    url = "http://dupish:3000/sr"  # 192.168.1.17
     headers = {
         "accept": "application/json",
         "Content-Type": "image/xpm",
