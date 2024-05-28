@@ -14,5 +14,8 @@ RUN poetry install
 
 EXPOSE 3000
 RUN poetry run python /usr/src/dupish/onnx_to_bento.py
-CMD ["bentoml", "serve", "/usr/src/dupish/api:svc"]
+# CMD ["bentoml", "serve", "/usr/src/dupish/api:svc"]
+# CMD ["poetry", "run", "bentoml", "serve", "api:svc", "--working-dir", "dupish"]
+# bentoml serve api:svc --working-dir dupish
+CMD ["tail", "-f", "dev/null"]
 
