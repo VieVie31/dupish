@@ -1,0 +1,17 @@
+ARG PYTHON_VERSION=3.10-slim
+FROM python:${PYTHON_VERSION}
+
+RUN apt update
+RUN apt install -y curl python3-pip 
+
+RUN pip3 install poetry==1.4.2
+
+WORKDIR /usr/src
+
+COPY backend/pyproject.toml /usr/src
+COPY backend/ /usr/src
+RUN poetry install
+
+EXPOSE 81
+CMD ["tail", "-f", "dev/null"]
+

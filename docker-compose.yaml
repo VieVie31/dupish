@@ -15,12 +15,24 @@ services:
     # environment:
     #   DUPISH_VOLUMES: /data
     command: "poetry run bentoml serve api:svc --working-dir inference"
-    #"minio server --console-address :9001"
-    # healthcheck:
-    #   test: ["CMD", "mc", "ready", "local"]
-    #   interval: 30s
-    #   timeout: 20s
-    #   retries: 3
+    restart: unless-stopped
+    healthcheck:
+      test: curl --fail http://127.0.0.1:3000/healthz || exit 1
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  backend:
+    container_name: dupish-backend
+    build:
+      context: .
+      dockerfile: dockers/Dockerfile.backend
+      args:
+        version: '0.0.1'
+    ports:
+        - "81:81"
+    command: "poetry run uvicorn backend.main:app --port 81 --host 0.0.0.0"
+    
 
 volumes:
   dupish-bento:
