@@ -2,26 +2,11 @@ ARG PYTHON_VERSION=3.10-slim
 FROM python:${PYTHON_VERSION}
 
 RUN apt update
-RUN apt install -y  curl 
-#gcc libpq-dev git iputils-ping python3-pip 
-RUN apt install -y wget unzip 
-# software-properties-common
-# RUN add-apt-repository ppa:inkscape.dev/stable
-# RUN apt-get update
+RUN apt install -y curl python3-pip 
 
+RUN pip3 install poetry==1.4.2
 
-##########################################"
 WORKDIR /usr/src
-
-RUN echo "====================== INSTALLING AND SETTING POETRY ======================"
-RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.0 POETRY_HOME="/opt/poetry" python -
-
-ENV POETRY_HOME="/opt/poetry"
-ENV PATH="$POETRY_HOME/bin:$PATH"
-
-# config poetry with private repo
-# RUN TODO
-# RUN mkdir -p $HOME/.config/pip
 
 COPY ./pyproject.toml /usr/src
 COPY . /usr/src
@@ -31,5 +16,3 @@ EXPOSE 3000
 RUN poetry run python /usr/src/dupish/onnx_to_bento.py
 CMD ["bentoml", "serve", "/usr/src/dupish/api:svc"]
 
-
-# docker compose -f docker-compose.yaml -p dupish up -d --build
