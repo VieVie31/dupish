@@ -75,6 +75,8 @@ if 0:
 
     results.T[1]
 
+    import matplotlib.pyplot as plt
+
     plt.plot(results.T[0])
     plt.scatter(
         np.arange(100)[results.T[1] == 200],
