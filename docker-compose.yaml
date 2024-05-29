@@ -16,7 +16,8 @@ services:
     #   DUPISH_VOLUMES: /data
     networks:
       - dupish-network
-    command: "poetry run bentoml serve api:svc --working-dir inference"
+    command: "poetry run bentoml serve service:svc --working-dir inference"
+    #command: "poetry run bentoml serve service:ISC_FT_V107 --working-dir inference" 
     restart: unless-stopped
     healthcheck:
       test: curl --fail http://127.0.0.1:3000/healthz || exit 1
