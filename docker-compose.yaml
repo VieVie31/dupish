@@ -96,6 +96,10 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    depends_on:
+      - dupish
+    networks:
+      - dupish-network
     command: "redis-server --appendonly yes --requirepass _r3d1s_"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

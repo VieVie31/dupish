@@ -23,9 +23,24 @@ class S3Settings(S3Settings):
     BUCKET_MEDIA: str
 
 
+class RedisSettings(BaseSettings):
+    USERNAME: str
+    PASSWORD: SecretStr
+    DOMAIN: str
+    PORT: int
+
+    @property
+    def REDIS_URL(self):
+        return f"redis://{self.USERNAME}:{self.PASSWORD.get_secret_value()}@{self.DOMAIN}:{self.PORT}/0"
+
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+
 class EnvSettings(BaseSettings):
     s3: S3Settings
     weaviate: WeaviateSettings
+    redis: RedisSettings
 
     model_config = SettingsConfigDict(
         env_file=(
@@ -42,3 +57,4 @@ class EnvSettings(BaseSettings):
 env_settings = EnvSettings()  # pyright: ignore
 s3_settings = env_settings.s3
 weaviate_settings = env_settings.weaviate
+redis_settings = env_settings.redis

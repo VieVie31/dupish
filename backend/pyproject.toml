@@ -14,6 +14,7 @@ weaviate-client = "^4.6.3"
 boto3 = "^1.34.115"
 pydantic-settings = "^2.2.1"
 pillow = "^10.3.0"
+redis = "^5.0.4"
 
 
 [build-system]
