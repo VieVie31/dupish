@@ -1,17 +1,39 @@
 import hashlib
 import io
+import json
 
 import numpy as np
 import requests
+import weaviate
+import weaviate.classes as wvc
 from fastapi import APIRouter, FastAPI, File, HTTPException, UploadFile
 from PIL import Image
+from weaviate.classes.config import Configure, DataType, Property, VectorDistances
+from weaviate.classes.query import Filter, MetadataQuery
 
-from .clients import get_s3_client
-from .settings import s3_settings
+from .clients import get_redis_client, get_s3_client, get_weaviate_client
+from .settings import redis_settings, s3_settings, weaviate_settings
 
 app = FastAPI()
 
 s3_client = get_s3_client(s3_settings)
+weaviate_client = get_weaviate_client(weaviate_settings)
+redis_client = get_redis_client(redis_settings, decode_response=False)
+
+
+# Create the weaviate collection if not exists
+if not "UploadedImages" in list(weaviate_client.collections.list_all().keys()):
+    weaviate_client.collections.create(
+        "UploadedImages",
+        properties=[
+            Property(name="title", data_type=DataType.TEXT),
+            Property(name="s3_key", data_type=DataType.TEXT),
+        ],
+        vector_index_config=Configure.VectorIndex.hnsw(
+            distance_metric=VectorDistances.COSINE
+        ),
+        vectorizer_config=wvc.config.Configure.Vectorizer.none(),
+    )
 
 
 @app.get("/")
@@ -54,7 +76,7 @@ def is_image(content):
 
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(img_title: str, file: UploadFile = File(...)):
     # Read the file content
     content = await file.read()
 
@@ -71,9 +93,53 @@ async def upload_image(file: UploadFile = File(...)):
     sha1_hash = hashlib.sha1(content).hexdigest()
     s3_key = f"{sha1_hash[:2]}/{sha1_hash[2:4]}/{sha1_hash[4:6]}/{sha1_hash}"
 
+    # Get the signature of the image
+    url = "http://dupish:3000/encode_image"  # 192.168.1.17
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "image/xpm",
+    }
+
+    r = requests.post(url, headers=headers, data=content)
+    assert r.status_code == 200, f"Failed to get the image signature: {r.text}"
+
+    ebd = np.array(r.json())
+    ebd = ebd / np.linalg.norm(ebd)
+
+    # Get the nearest image on weaviate
+    uploaded_images_collection = weaviate_client.collections.get("UploadedImages")
+
+    retrieved_most_similar_image = uploaded_images_collection.query.near_vector(
+        near_vector=ebd.astype(float).tolist(),
+        limit=1,
+        distance=0.15,  # max accepted distance
+        return_metadata=MetadataQuery(distance=True, creation_time=True),
+        include_vector=False,
+    )
+
+    # Similar image already exists: refuse to add duplicate
+    if len(retrieved_most_similar_image.objects) > 0:
+        raise HTTPException(
+            status_code=409,  # conflict
+            detail=json.dumps(
+                {
+                    "error": "Duplicate image",
+                    "most_similar_image": retrieved_most_similar_image.objects[
+                        0
+                    ].properties,
+                }
+            ),
+        )
+
+    # Add the image into weaviate
+    inserted_uuid = uploaded_images_collection.data.insert(
+        properties={"title": img_title, "s3_key": s3_key},
+        vector=ebd.astype(float).tolist(),
+    )
+
     # Upload the file to S3
     response = s3_client.put_object(
         Bucket=s3_settings.BUCKET_MEDIA, Key=s3_key, Body=content
     )
 
-    return {"key": s3_key}
+    return {"key": s3_key, "uuid": str(inserted_uuid)}
