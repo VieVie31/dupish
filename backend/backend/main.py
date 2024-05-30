@@ -12,10 +12,10 @@ from weaviate.classes.config import Configure, DataType, Property, VectorDistanc
 from weaviate.classes.query import Filter, MetadataQuery
 
 from .clients import (
+    generate_presigned_url,
     get_redis_client,
     get_s3_client,
     get_weaviate_client,
-    generate_presigned_url,
 )
 from .settings import redis_settings, s3_settings, weaviate_settings
 
@@ -124,10 +124,12 @@ async def upload_image(img_title: str, file: UploadFile = File(...)):
 
     # Similar image already exists: refuse to add duplicate
     if len(retrieved_most_similar_image.objects) > 0:
-
         url = generate_presigned_url(
-            retrieved_most_similar_image.objects[0].properties["s3_key"]
-        )
+            s3_client,
+            s3_settings.BUCKET_MEDIA,
+            retrieved_most_similar_image.objects[0].properties["s3_key"],
+            200,
+        )  # TODO: change the host to the public host name of the generated pre-signed url…
         raise HTTPException(
             status_code=409,  # conflict
             detail=json.dumps(
