@@ -15,4 +15,5 @@ RUN pip3 install poetry==1.4.2 \
 RUN pip3 install -r requirements.txt
 
 COPY backend/ /usr/src
+COPY .env /usr/src
 CMD ["tail", "-f", "dev/null"]
