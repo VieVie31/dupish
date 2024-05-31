@@ -65,18 +65,20 @@ services:
     
 
   weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.24.6
     container_name: weaviate
+    env_file:
+      - .env
     command:
     - --host
     - 0.0.0.0
     - --port
-    - '4281'
+    - ${WEAVIATE__HTTP_PORT}
     - --scheme
     - http
-    image: cr.weaviate.io/semitechnologies/weaviate:1.24.6
     ports:
-    - 4281:4281
-    - 50051:50051
+    - ${WEAVIATE__HTTP_PORT}:${WEAVIATE__HTTP_PORT}
+    - ${WEAVIATE__GRPC_PORT}:${WEAVIATE__GRPC_PORT}
     volumes:
     - weaviate_data:/var/lib/weaviate
     depends_on:
@@ -96,15 +98,17 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    env_file:
+      - .env
     ports:
-      - "6379:6379"
+      - "${REDIS__PORT}:${REDIS__PORT}" #"6379:6379"
     volumes:
       - redis_data:/data
     depends_on:
       - dupish
     networks:
       - dupish-network
-    command: "redis-server --appendonly yes --requirepass _r3d1s_"
+    command: "redis-server --appendonly yes --requirepass ${REDIS__PASSWORD}"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
